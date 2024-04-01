@@ -70,20 +70,29 @@ public class RatingCacheRepository implements InitializingBean {
     }
 
     public List<Rating> findAllCahedRatings() {
-        return redisTemplate
-                .keys("rating*")
-                .stream()
-                .map(ratingId -> {
-                    try {
-                        var rating = jsonMapper.readValue(valueOps.get(ratingId), Rating.class);
-                        rating.setFromCache(true);
-                        return rating;
-                    } catch (JsonProcessingException ex) {
-                       LOGGER.error("Error reading rating from cache: {}", ex.getMessage());
-                        return null;
-                    }
-                })
-                .collect(Collectors.toList());
+
+        List<Rating> ratings;
+        
+        try {
+            ratings = redisTemplate
+                    .keys("rating*")
+                    .stream()
+                    .map(ratingId -> {
+                        try {
+                            var rating = jsonMapper.readValue(valueOps.get(ratingId), Rating.class);
+                            rating.setFromCache(true);
+                            return rating;
+                        } catch (JsonProcessingException e) {
+                            LOGGER.error("Error reading rating from cache: {}", e.getMessage());
+                            return null;
+                        }
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            LOGGER.error("Error reading ratings from cache: {}", e.getMessage());
+            ratings = List.of();
+        } 
+        return ratings;
     }
 
     public boolean cacheRating(Rating ratingPersisted) {
