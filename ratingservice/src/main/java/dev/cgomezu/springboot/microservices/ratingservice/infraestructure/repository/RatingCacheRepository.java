@@ -45,7 +45,10 @@ public class RatingCacheRepository implements InitializingBean {
     }
 
     public List<Rating> findCachedRatingsBooksByBookId(Long bookId) {
-        return setOps.members("book-" + bookId)
+        List<Rating> ratings;
+
+        try {
+            ratings = setOps.members("book-" + bookId)
                 .stream()
                 .map(ratingId -> {
                     try {
@@ -58,6 +61,11 @@ public class RatingCacheRepository implements InitializingBean {
                     }
                 })
                 .collect(Collectors.toList());
+        } catch (Exception e) {
+            LOGGER.error("Error reading ratings from cache: {}", e.getMessage());
+            ratings = List.of();
+        }
+        return ratings;
     }
 
     public Rating findCachedRaitingById(Long ratingId) {

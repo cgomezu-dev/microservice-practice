@@ -56,13 +56,13 @@ public class RatingControllerTest {
         .when()
             .port(8082)
             .basePath("/ratingservice")
-            .get("/ratings" + "?bookId=1")
+            .get("/ratings" + "?bookId=2")
         .then()
             .statusCode(200)
             .assertThat()
             .body("size()", is(1))
             .and()
-            .body("[0].bookId", is(1));
+            .body("[0].bookId", is(2));
 
     }
 
